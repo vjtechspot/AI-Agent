@@ -10,6 +10,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "List of phone numbers is required" }, { status: 400 });
         }
 
+        if (!roomService || !sipClient) {
+            return NextResponse.json({ error: "LiveKit credentials not configured" }, { status: 500 });
+        }
+
         const trunkId = process.env.VOBIZ_SIP_TRUNK_ID;
         if (!trunkId) {
             return NextResponse.json({ error: "SIP Trunk not configured" }, { status: 500 });
@@ -17,8 +21,6 @@ export async function POST(request: Request) {
 
         const results = [];
 
-        // Process casually to avoid rate limits (simple queue)
-        // In a real production environment, push these to a Redis queue like BullMQ
         for (const phoneNumber of numbers) {
             try {
                 const roomName = `call-${phoneNumber.replace(/\+/g, '')}-${Math.floor(Math.random() * 10000)}`;
@@ -47,7 +49,6 @@ export async function POST(request: Request) {
 
                 results.push({ phoneNumber, status: 'dispatched', id: info.sipCallId });
 
-                // Artificial delay to prevent API flooding (200ms)
                 await new Promise(r => setTimeout(r, 200));
 
             } catch (e: any) {
