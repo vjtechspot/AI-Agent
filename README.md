@@ -1,115 +1,78 @@
-# LiveKit Vobiz Outbound Agent 📞
+# Sri Star Gold - AI Telecalling Agent 📞
 
-A production-ready voice agent capable of making outbound calls using **LiveKit**, **Deepgram**, and **Groq (Llama 3.3)**.  
-Designed for reliability, speed, and ease of deployment.
+A multilingual (Kannada, Hindi, Tamil, Telugu) production-ready voice agent for **Sri Star Gold Company**. Built using **LiveKit**, **Sarvam AI**, and **Groq**.
 
 ## 🚀 Features
-- **Ultra-Fast LLM**: Uses **Groq** running `llama-3.3-70b-versatile` for near-instant responses.
-- **High-Quality Audio**: Uses **Deepgram** for both Speech-to-Text (STT) and Text-to-Speech (TTS).
-- **SIP Trunking**: Integrated with **Vobiz** for PSTN connectivity.
-- **Robust Configuration**: Centralized `config.py` for easy customization of prompts, models, and voices.
+- **Multilingual Support**: Starts in Kannada; switches to Hindi, Tamil, or Telugu automatically.
+- **Ultra-Fast LLM**: Powered by **Groq (Llama 3.3 70B)** for human-like response speeds.
+- **Indian Native Voices**: Uses **Sarvam AI (Anushka voice)** for natural-sounding regional languages.
+- **Lead Capture**: Automatically extracts and logs customer details (Name, Grams, Address).
+- **SIP Integration**: Seamlessly integrated with **Vobiz** for outbound calling.
 
 ---
 
-## 🛠️ Setup & Installation
+## 🛠️ Setup & Installation (Windows)
 
 ### 1. Prerequisites
-- Python 3.10+ (Recommended: 3.10.13)
-- A [LiveKit Cloud](https://cloud.livekit.io/) account
-- A [Deepgram](https://deepgram.com/) API Key
-- A [Groq](https://groq.com/) API Key
-- A SIP Provider (e.g., Vobiz)
+- Python 3.10+
+- LiveKit Cloud Account
+- Sarvam AI API Key (for high-quality Indian voices)
+- Groq API Key (for fast intelligence)
+- Vobiz SIP Account
 
-### 2. Clone & Install
-```bash
-# Clone the repository
-git clone <your-repo-url>
-cd LiveKit-Vobiz-Outbound-main
-
-# Create a virtual environment
+### 2. Installation
+```powershell
+# Create and activate virtual environment
 python -m venv venv
-
-# Activate the virtual environment
-# On Windows:
 .\venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
 
 # Install dependencies
-pip install -r requirements.txt
+.\venv\Scripts\pip.exe install -r requirements.txt
 ```
 
-### 3. Configure Environment
-Copy the example environment file and fill in your credentials:
-```bash
-cp .env.example .env
-nano .env  # Or open in your editor
-```
-**Required Variables:**
-- `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_SECRET`
-- `DEEPGRAM_API_KEY`
-- `GROQ_API_KEY`
-- `VOBIZ_SIP_*` variables (for outbound calls)
+### 3. Environment Configuration
+Ensure your `.env` file contains the correct LiveKit and Vobiz credentials. Specifically, ensure `VOBIZ_SIP_TRUNK_ID` starts with `ST_` (LiveKit internal ID).
 
 ---
 
-## 🏃‍♂️ Usage
+## 🏃‍♂️ Usage (Windows)
 
-### 1. Start the Agent
-This runs the agent process which listens for room connections.
-```bash
-python agent.py start
+### Step 1: Start the Agent
+This worker must be running to handle the calls.
+```powershell
+.\venv\Scripts\python.exe agent.py dev
 ```
+*Wait for: `[INFO] outbound-agent: worker registered`.*
 
-### 2. Make an Outbound Call
-In a **new terminal window** (ensure `venv` is active), run:
-```bash
-python make_call.py --to +91XXXXXXXXXX
+### Step 2: Initiate a Call
+In a **new terminal window**, run:
+```powershell
+.\venv\Scripts\python.exe make_call.py --to +91XXXXXXXXXX
 ```
-*Note: The number must include the country code (e.g., +1 or +91).*
 
 ---
 
-## 🔧 Troubleshooting Guide
+## 🔧 Windows Troubleshooting
 
-### ❌ Error: `model_decommissioned` (Groq/Llama)
-**Cause:** The configured LLM model is no longer supported by Groq.  
-**Fix:**
-1. Open `config.py`.
-2. Update `GROQ_MODEL` to a supported model (e.g., `llama-3.3-70b-versatile` or `llama-3.1-8b-instant`).
-3. **Restart `agent.py`** to apply changes.
+### ❌ Error: `SSL: CERTIFICATE_VERIFY_FAILED`
+**Fix:** The agent already includes `certifi` logic. Ensure `pip install certifi` was successful.
 
 ### ❌ Error: `404 Not Found` (SIP Trunk)
-**Cause:** The `SIP_TRUNK_ID` in `.env` is incorrect or doesn't exist in your LiveKit project.  
-**Fix:**
-1. Run `python list_trunks.py` to see available trunks.
-2. If none exist, run `python create_trunk.py` to create one.
-3. Update `.env` with the correct ID.
+**Fix:** The ID in `.env` is likely your Vobiz ID, not the LiveKit ID.
+1. Run `.\venv\Scripts\python.exe create_trunk.py`.
+2. Copy the `ST_...` ID from the output.
+3. Update `VOBIZ_SIP_TRUNK_ID` in `.env`.
 
-### ❌ Error: `Address already in use` (Port 8081)
-**Cause:** Another instance of `agent.py` is already running.  
+### ❌ Agent is running but phone doesn't ring
 **Fix:**
-1. Find the process: `lsof -i :8081`
-2. Kill it: `kill -9 <PID>` or `pkill -f "python agent.py"`
-
-### ❌ Error: `No module named 'certifi'` or other imports
-**Cause:** Dependencies are missing.  
-**Fix:**
-1. Ensure your virtual environment is active (`source venv/bin/activate`).
-2. Run `pip install -r requirements.txt`.
-
-### ❌ Call Connects but No Audio
-**Cause:** TTS (Text-to-Speech) failure or WebSocket issues.  
-**Fix:**
-1. Check terminal logs for `APIStatusError`.
-2. If using OpenAI TTS, ensure you have OpenAI credits.
-3. Recommended: Switch to Deepgram TTS (set `TTS_PROVIDER=deepgram` in `.env`).
+1. Check the Agent terminal for `--- STEP 3 ---`.
+2. If it stops there, check your Vobiz **Username** and **Password** in `.env`.
+3. Ensure your Vobiz account has an active balance.
 
 ---
 
-## 📂 Project Structure
-- `agent.py`: Main application logic.
-- `config.py`: Central configuration for prompts, models, and constants.
-- `make_call.py`: Script to initiate outbound calls.
-- `create_trunk.py` / `setup_trunk.py`: Utilities for SIP trunk management.
-# LIvekitAIVoice
+## 📂 Key Files
+- `agent.py`: Core AI logic & Multilingual switching.
+- `config.py`: Prompt engineering & Model settings.
+- `make_call.py`: Outbound trigger script.
+- `.env`: API Keys & SIP Credentials.
